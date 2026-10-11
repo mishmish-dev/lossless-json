@@ -38,8 +38,7 @@
     "release:push": "git push && git push --tag",
     "release:publish": "npm publish",
     "release-dry-run": "npm run build-and-test && standard-version --dry-run",
-    "benchmark": "npm run build:esm && node tools/benchmark/run.mjs",
-    "prepare": "husky"
+    "benchmark": "npm run build:esm && node tools/benchmark/run.mjs"
   },
   "keywords": [
     "json",
