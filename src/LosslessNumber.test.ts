@@ -1,3 +1,5 @@
+/// <reference types="node" />
+import { runInNewContext } from 'node:vm'
 import { expect, test } from 'vitest'
 import { compareLosslessNumber, isLosslessNumber, LosslessNumber, toLosslessNumber } from './index'
 
@@ -79,4 +81,29 @@ test('can do operations like add a number and a LosslessNumber', () => {
 
 test('LosslessNumber - toString', () => {
   expect(new LosslessNumber('23.4').toString()).toBe('23.4')
+})
+
+test('literal marker objects are not LosslessNumbers, including another realm', () => {
+  for (const value of [
+    { isLosslessNumber: true },
+    { isLosslessNumber: true, value: '42' },
+    { isLosslessNumber: 1, value: '42' },
+    { isLosslessNumber: true, value: '42', toString: '42' },
+    runInNewContext('({ isLosslessNumber: true, value: "42" })')
+  ]) {
+    expect(isLosslessNumber(value)).toBe(false)
+  }
+})
+
+test('recognizes subclasses and equivalent numbers from another realm', () => {
+  class ExtendedNumber extends LosslessNumber {}
+  expect(isLosslessNumber(new ExtendedNumber('42'))).toBe(true)
+  const other = runInNewContext(`new (class {
+    isLosslessNumber = true
+    value = '42'
+    toString() { return this.value }
+    valueOf() { return Number(this.value) }
+  })()`)
+  expect(other instanceof LosslessNumber).toBe(false)
+  expect(isLosslessNumber(other)).toBe(true)
 })

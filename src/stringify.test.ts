@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js'
 import { expect, test } from 'vitest'
-import { LosslessNumber, type NumberStringifier, stringify } from './index'
+import { LosslessNumber, type NumberStringifier, parse, stringify } from './index'
 import type { GenericObject } from './types'
 
 // helper function to create a lossless number
@@ -329,4 +329,14 @@ test('stringify an empty array', () => {
 test('stringify an empty object', () => {
   expect(stringify({}, null, 2)).toEqual('{}')
   expect(stringify({}, null, '    ')).toEqual('{}')
+})
+
+test('stringify literal marker objects without treating them as numbers', () => {
+  for (const text of [
+    '{"isLosslessNumber":true,"value":"9007199254740993"}',
+    '{"isLosslessNumber":true,"toString":"literal","nested":[9007199254740993]}',
+    '{"nested":{"isLosslessNumber":1,"value":"42"}}'
+  ]) {
+    expect(stringify(parse(text))).toBe(text)
+  }
 })

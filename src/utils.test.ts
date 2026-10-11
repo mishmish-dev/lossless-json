@@ -263,3 +263,34 @@ test('extractSignificantDigits', () => {
   expect(extractSignificantDigits('01200')).toEqual('12')
   expect(extractSignificantDigits('-01200')).toEqual('12')
 })
+
+test('unsafe integers remain unsafe in decimal and exponent notation', () => {
+  for (const value of [
+    '9007199254740992.0',
+    '9007199254740992e0',
+    '1.0000000000000002e19',
+    '-1.0000000000000002e19'
+  ]) {
+    expect(isSafeNumber(value)).toBe(false)
+    expect(isSafeNumber(value, { approx: true })).toBe(false)
+    expect(() => toSafeNumberOrThrow(value)).toThrow('Cannot safely convert to number')
+  }
+  expect(isSafeNumber('9007199254740991.0')).toBe(true)
+  expect(isSafeNumber('9.007199254740991e15')).toBe(true)
+})
+
+test('splitNumber normalizes long zero runs and rejects long invalid coefficients', () => {
+  const zeros = '0'.repeat(20000)
+  expect(splitNumber(`1.${zeros}1`)).toEqual({
+    sign: '',
+    digits: `1${zeros}1`,
+    exponent: 0
+  })
+  expect(splitNumber(`-00.${zeros}1200e2`)).toEqual({
+    sign: '-',
+    digits: '12',
+    exponent: -19999
+  })
+  expect(splitNumber(`1${zeros}00`)).toEqual({ sign: '', digits: '1', exponent: 20002 })
+  expect(() => splitNumber(`1${zeros}x`)).toThrow('Invalid number')
+})

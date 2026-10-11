@@ -71,8 +71,22 @@ export class LosslessNumber {
  * Test whether a value is a LosslessNumber
  */
 export function isLosslessNumber(value: unknown): value is LosslessNumber {
-  // @ts-expect-error
-  return (value && typeof value === 'object' && value.isLosslessNumber) || false
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+  const number = value as LosslessNumber
+  const prototype = Object.getPrototypeOf(value)
+  // Preserve cross-bundle recognition while excluding plain JSON objects in any realm.
+  return (
+    number.isLosslessNumber === true &&
+    typeof number.value === 'string' &&
+    isNumber(number.value) &&
+    typeof number.toString === 'function' &&
+    number.toString !== Object.prototype.toString &&
+    typeof number.valueOf === 'function' &&
+    prototype !== null &&
+    Object.getPrototypeOf(prototype) !== null
+  )
 }
 
 /**

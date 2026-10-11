@@ -567,3 +567,19 @@ describe('isDeepEqual', () => {
     expect(isDeepEqual([{ id: 2 }], [{ id: 3 }])).toEqual(false)
   })
 })
+
+test('reviver visits literal marker fields without entering real LosslessNumbers', () => {
+  const keys: string[] = []
+  const value = parse(
+    '{"isLosslessNumber":true,"value":"42","nested":{"number":9007199254740993}}',
+    (key, value) => {
+      keys.push(key)
+      return key === 'value' ? 'changed' : value
+    }
+  ) as Record<string, unknown>
+  expect(keys).toEqual(['isLosslessNumber', 'value', 'number', 'nested', ''])
+  expect(value.value).toBe('changed')
+  expect(stringify(value)).toBe(
+    '{"isLosslessNumber":true,"value":"changed","nested":{"number":9007199254740993}}'
+  )
+})
