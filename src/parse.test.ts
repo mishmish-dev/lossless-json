@@ -54,20 +54,25 @@ test('parse an object with __proto__ key', () => {
   const text = '{"__proto__":{"polluted":true}}'
   const parsed = parse(text) as Record<string, unknown>
 
+  // biome-ignore lint/suspicious/noPrototypeBuiltins: Match the parser's compatibility check.
   expect(Object.prototype.hasOwnProperty.call(parsed, '__proto__')).toBe(true)
   expect(Object.getPrototypeOf(parsed)).toBe(Object.prototype)
-  expect((parsed as any).polluted).toBeUndefined()
+  expect(parsed.polluted).toBeUndefined()
   expect(Object.keys(parsed)).toEqual(['__proto__'])
   expect(stringify(parsed)).toBe('{"__proto__":{"polluted":true}}')
 })
 
 test('parse an object with __proto__ key using a reviver', () => {
   const text = '{"__proto__":1}'
-  const parsed = parse(text, (key, value) => (key === '__proto__' ? 2 : value)) as Record<string, unknown>
+  const parsed = parse(text, (key, value) => (key === '__proto__' ? 2 : value)) as Record<
+    string,
+    unknown
+  >
 
+  // biome-ignore lint/suspicious/noPrototypeBuiltins: Match the parser's compatibility check.
   expect(Object.prototype.hasOwnProperty.call(parsed, '__proto__')).toBe(true)
   expect(Object.getPrototypeOf(parsed)).toBe(Object.prototype)
-  expect(parsed['__proto__']).toBe(2)
+  expect(parsed.__proto__).toBe(2)
 })
 
 test('array', () => {
